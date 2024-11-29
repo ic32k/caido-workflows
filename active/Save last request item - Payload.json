@@ -1,0 +1,142 @@
+{
+  "description": "This will extract the last item of the request's URL, ideal for saving user-id or path fromsimple IDOR attacks or similar",
+  "edition": 2,
+  "graph": {
+    "edges": [
+      {
+        "source": {
+          "exec_alias": "exec",
+          "node_id": 2
+        },
+        "target": {
+          "exec_alias": "exec",
+          "node_id": 1
+        }
+      },
+      {
+        "source": {
+          "exec_alias": "exec",
+          "node_id": 3
+        },
+        "target": {
+          "exec_alias": "exec",
+          "node_id": 2
+        }
+      },
+      {
+        "source": {
+          "exec_alias": "exec",
+          "node_id": 0
+        },
+        "target": {
+          "exec_alias": "exec",
+          "node_id": 3
+        }
+      }
+    ],
+    "nodes": [
+      {
+        "alias": "active_start",
+        "definition_id": "caido/active-start",
+        "display": {
+          "x": 0,
+          "y": 0
+        },
+        "id": 0,
+        "inputs": [],
+        "name": "Active Start",
+        "version": "0.1.0"
+      },
+      {
+        "alias": "active_end",
+        "definition_id": "caido/active-end",
+        "display": {
+          "x": 0,
+          "y": 300
+        },
+        "id": 1,
+        "inputs": [],
+        "name": "Active End",
+        "version": "0.1.0"
+      },
+      {
+        "alias": "create_finding",
+        "definition_id": "caido/finding-create",
+        "display": {
+          "x": 0,
+          "y": 190
+        },
+        "id": 2,
+        "inputs": [
+          {
+            "alias": "request",
+            "value": {
+              "data": "$active_start.request",
+              "kind": "ref"
+            }
+          },
+          {
+            "alias": "reporter",
+            "value": {
+              "data": "Manual",
+              "kind": "string"
+            }
+          },
+          {
+            "alias": "title",
+            "value": {
+              "data": "Found",
+              "kind": "string"
+            }
+          },
+          {
+            "alias": "description",
+            "value": {
+              "data": "$javascript.data",
+              "kind": "ref"
+            }
+          }
+        ],
+        "name": "Create Finding",
+        "version": "0.1.0"
+      },
+      {
+        "alias": "javascript",
+        "definition_id": "caido/http-code-js",
+        "display": {
+          "x": 0,
+          "y": 90
+        },
+        "id": 3,
+        "inputs": [
+          {
+            "alias": "request",
+            "value": {
+              "data": "$active_start.request",
+              "kind": "ref"
+            }
+          },
+          {
+            "alias": "response",
+            "value": {
+              "data": "$active_start.response",
+              "kind": "ref"
+            }
+          },
+          {
+            "alias": "code",
+            "value": {
+              "data": "/**\n * @param {HttpInput} input\n * @param {SDK} sdk\n * @returns {MaybePromise<Data | undefined>}\n */\nexport async function run({ request, response }, sdk) {\n  let respuesta=\"\";\n  let lastPart;\n  if (request) {\n    let host = request.getHost();\n    respuesta = request.getPath();\n    lastPart = respuesta.replace(/\\/+$/, '')\n                     .split('/')\n                     .pop();\n  }\n  return \"Found id: \"+lastPart;\n}\n",
+              "kind": "string"
+            }
+          }
+        ],
+        "name": "Javascript",
+        "version": "0.1.0"
+      }
+    ]
+  },
+  "id": "81b115a5-e17c-4fd7-88a8-a171438880d9",
+  "kind": "active",
+  "name": "Save last request item - Payload"
+}
